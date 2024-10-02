@@ -119,20 +119,30 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
     [SerializeField] public GameObject [] externalCanvases;
     [SerializeField] public GameObject _virtualCamera;
     [SerializeField] public GameObject _kairRef;
+    private GameObject _shieldFxInstance = null;
+    private GameObject _gunPrefab = null;
+    private GameObject _gunInstance = null;
+    private GameObject _grenadePrefab = null;
+    private GameObject _grenadeInstance = null;
+    public GameObject rightHandAnchor = null;
+
 
     [Header("UI Ref")]
-    public Button _signatureAttack;
-    public Button _bomb;
-    public Button _shoot;
+    public Button _signatureAttackButton;
+    public FixedJoystick _grenadeButton;
+    public FixedJoystick _shootButton;
+    public Image _shootCooldownImage;
+    public Image _bombCooldownImage;
+    public Image _signatureCooldownImage;
     public TMP_Text _ObjectInfoContent;
     public TMP_Text _ObjectInfoTitle;
     public Image _otherInformationPic;
     public CanvasGroup _shoulder;
     public CanvasGroup []_forearms;
     public CanvasGroup _body;
-    private readonly GameObject _shieldFxInstance = null;
     public GameObject _playerMinimapPointer;
     public GameObject _checkPointFx;
+    public GameObject _bombProjectionMarker;
     public Collider _hammerCollider;
     public Collider _PlayerShield;
     public Transform _cleaveSpts;
@@ -197,47 +207,20 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
     public Material _alkemmanaSwitchonMat;
 
     [Header("Count")] 
-    public int _switchedOnCount;
-    public int _collectedTheraCode;
-    public int _collectedTheraBox;
-    public int _collectedMagicalScroll;
-    public int _collectedOrbs;
-    public int _magicScrolls;
-    public int _collectedAdacode;
-    public int _forearmsArmor;
-    public int _bodyArmor;
-    public int _ShoulderArmor;
-    public int _collectedClawCount;
-    public int _completedMissionNo;
-    public int _collectedChest;
     public int _monsterSlain;
-    public int _mapIndex;
-    public int _missionNumber;
-    public int _stepCount;
     public float _elapsedTime;
-    public float _checkIntervel = 0.5f;
-    public float distanceMoved = 0.0f;
     public Vector3 previousPosition = new Vector3();
     Vector3 pushDirection;
     public Vector3 positionBeforeTeleport;
+    public Vector3 grenadeThrowDirection;
+    private Vector3 grenadeInput;
 
     [Header("Panel")] 
-    public GameObject _grimoirPanel;
-    public GameObject _potionPanel;
-    public GameObject _cutscenePanel;
-    public GameObject _layoutPanel;
-    public GameObject _weaponPowerUpPanel;
-    public GameObject _mirasChallengePanel;
-    public CanvasGroup _darkPanel;
-    public GameObject _canvas;
-    public GameObject _gameOverCanvas;
-    public GameObject _settingPanel;
-    public GameObject _revivePanel;
     public GameObject closestEnemy;
-    public GameObject kairHealthCanvas;
-    public Image _kairFill;
 
+    [Header("Values")] 
     public float movement_Speed = 3f;
+    public float grenadeThrowRange = 1f;
     public string currentAreaName = "";
     public Stack<string> visitedAreas = new Stack<string>();
     public Dictionary<string, bool> playedCinematics = new Dictionary<string, bool>();
@@ -296,14 +279,12 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
         shallPause = true;
 
         #region Listeners
-        _bomb.onClick.AddListener(() =>
-        {
-            ThrowBomb();
-        });
 
-        _shoot.onClick.AddListener(() =>
+        Joystick.Dropped += ThrowBomb;
+
+        _signatureAttackButton.onClick.AddListener(() =>
         {
-            Shoot();
+            Kick();
         });
         #endregion
 
@@ -314,20 +295,87 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
         #endregion
     }
 
+    private void Kick()
+    {
+        animator.SetBool(SignatureHash, true);
+        StartCoroutine(StartCooldown(5f, _signatureCooldownImage, _signatureAttackButton, true));
+    }
+
+    private void Kicked()
+    {
+        animator.SetBool(SignatureHash, false);
+    }
+
     private void Shoot()
     {
         animator.SetBool(ShootHash,true);
+        //StartCoroutine(StartCooldown(5f, _shootCooldownImage, _shootButton, true));
+        _gunPrefab = Resources.Load<GameObject>("Prefabs/Weapons/AK74");
+        _gunInstance = Instantiate(_gunPrefab, rightHandAnchor.transform);
+    }
+
+    public void ShootBulletInit()
+    {
+        if (_gunInstance != null)
+        {
+            _gunInstance.GetComponent<WeaponBehaviour>().ShootBullet();
+            animator.SetBool(ShootHash,false);
+            Destroy(_gunInstance);
+        }
     }
 
     private void ThrowBomb()
     {
         animator.SetBool(BombHash,true);
+        //StartCoroutine(StartCooldown(5f, _bombCooldownImage, _grenadeButton, true));
+        _grenadePrefab = Resources.Load<GameObject>("Prefabs/Weapons/RGD-5");
     }
 
     public void InstantiateAndThrow()
     {
+        if (_grenadePrefab != null)
+        {
+            _grenadeInstance = Instantiate(_grenadePrefab, rightHandAnchor.transform.position, rightHandAnchor.transform.rotation);
 
+            grenadeThrowDirection = CalculateThrowDirection(rightHandAnchor.transform.position,
+                _bombProjectionMarker.transform.position,
+                1.5f,
+                1f);
+            _grenadeInstance.GetComponent<Rigidbody>().AddForce(grenadeThrowDirection, ForceMode.VelocityChange);
+            _grenadeInstance.GetComponent<WeaponBehaviour>()._grenadeTarget = _bombProjectionMarker.transform.position;
+        }
+        animator.SetBool(BombHash, false);
     }
+
+    private Vector3 CalculateThrowDirection(Vector3 start, Vector3 target, float throwForce, float arcHieght)
+    {
+        // Calculate the flat direction (horizontal, xz-plane)
+        Vector3 flatDirection = new Vector3(target.x - start.x, 0, target.z - start.z);
+        float distanceXZ = flatDirection.magnitude;
+
+        // Calculate the height difference
+        float yOffset = target.y - start.y;
+
+        // Gravity (positive value)
+        float gravity = -Physics.gravity.y;
+
+        // Calculate the time to reach the target (t is based on the maxFlightTime)
+        float flightTime = 1f;
+
+        // Calculate the initial velocity in the xz-plane
+        Vector3 velocityXZ = flatDirection.normalized * (distanceXZ / flightTime);
+
+        // Calculate the initial velocity in the y-axis (vertical velocity)
+        float velocityY = (yOffset + 0.5f * gravity * Mathf.Pow(flightTime, 2)) / flightTime;
+
+        // Combine the horizontal and vertical velocities
+        Vector3 velocity = velocityXZ;
+        velocity.y = velocityY;
+
+        return velocity;
+    }
+
+
 
     #region Trigger
 
@@ -345,7 +393,6 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
         //Time.timeScale = 1f;
         pause = false;
         Debug.Log("Resuming game..");
-        _grimoirPanel.SetActive(false);
     }
 
     public void Pause()
@@ -353,7 +400,6 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
         //Time.timeScale = 0f;
         pause = true;
         Debug.Log("Resuming game..");
-        _grimoirPanel.SetActive(true);
     }
 
     #endregion
@@ -497,76 +543,6 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
             animator.CrossFadeInFixedTime("JumpMove", .2f);
     }
 
-    private IEnumerator InitiateAttacKOneSliceVfx(int index, float delay)
-    {
-        if (isAttacking) yield return null;
-
-        isAttacking = true;
-        yield return new WaitForSeconds(1f);
-        _powerUpAura.SetActive(true);
-        _attackOnefirstSlice.SetActive(true);
-        yield return new WaitForSeconds(1f);
-        _attackOnefirstSlice.SetActive(false);
-        _attackOneSecondSlice.SetActive(true);
-        yield return new WaitForSeconds(1.2f);
-        _attackOneSecondSlice.SetActive(false);
-        _attackOneThirdSlice.SetActive(true);
-        yield return new WaitForSeconds(0.10f);
-        _attackOneThirdSlice.SetActive(false);
-        _powerUpAura.SetActive(false);
-        isAttacking = false;
-    }
-
-    private IEnumerator InitiateAttacKOneWeaponCollider(int index, float delay)
-    {
-        if (!isAttacking) yield return null;
-
-        if (index == 1 && isAttacking)
-        {
-            yield return new WaitForSeconds(delay * 0.3f);
-            _hammerCollider.enabled = true;
-            yield return new WaitForSeconds(delay * 0.7f);
-            _hammerCollider.enabled = false;
-        }
-        else if (index == 2 && isAttacking)
-        {
-            yield return new WaitForSeconds(delay * 0.4f);
-            _hammerCollider.enabled = true;
-            yield return new WaitForSeconds(delay * 0.6f);
-            _hammerCollider.enabled = false;
-        }
-        else
-        {
-            yield return null;
-        }
-    }
-
-    private IEnumerator InitiateSliceVfx(int index, float delay)
-    {
-        if (isAttacking) yield return null;
-        isAttacking = true;
-        yield return new WaitForSeconds(0.8f);
-        _powerUpAura.SetActive(true);
-        _attacktwoFirstSlice.SetActive(true);
-        yield return new WaitForSeconds(1f);
-        _attacktwoFirstSlice.SetActive(false);
-        _attacktwoSecondSlice.SetActive(true);
-        yield return new WaitForSeconds(0.25f);
-        _attacktwoSecondSlice.SetActive(false);
-        _powerUpAura.SetActive(false);
-        isAttacking = false;
-    }
-
-    IEnumerator WeaponCleave()
-    {
-        yield return new WaitForSecondsRealtime(1f);
-        _rb.AddForce(transform.up * 50f, ForceMode.Acceleration);
-        //_rigidbody.AddForce(transform.up * (extraGravity * 2 * Time.deltaTime), ForceMode.VelocityChange);
-        yield return new WaitForSecondsRealtime(1.09f);
-        GameObject _cleave = Instantiate(_hammerCleave,_cleaveSpts.position, _cleaveSpts.rotation);
-        Destroy(_cleave, 1.5f);
-    }
-
     private IEnumerator DisableAnimation(int AttackingHash, float delay)
     {
         isAttacking = true;
@@ -600,20 +576,21 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
     {
         useRootMotion = pause ? !pause : !pause;
 
-        UpdateCheckInTime();
+        HandleGrenadeThrowInput();
 
         if (Input.GetKeyDown(KeyCode.P))
         {
             GetComponent<IntrantPlayerInput>().currentPlatform = PlatformType.PC;
         }
 
-        if(!shallPause && pause) {
+        if (!shallPause && pause)
+        {
             pause = false;
         }
 
-        if(Input.GetKeyDown(KeyCode.P))
+        if (Input.GetKeyDown(KeyCode.P))
         {
-           
+
         }
 
         if (pause)
@@ -626,10 +603,28 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
             input = Vector3.zero;
             SetAnimatorToIdle();
         }
+    }
 
-        #region Map wise conditions
+    private void HandleGrenadeThrowInput()
+    {
+        grenadeInput = new Vector3(_shootButton.Horizontal, 0, _shootButton.Vertical);
+        if (grenadeInput != Vector3.zero)
+        {
+            _bombProjectionMarker.SetActive(true);
+            PlaceMarker();
+            Debug.LogError($"Gun Input {grenadeInput}");
+        }
+        else if (grenadeInput == Vector3.zero && _bombProjectionMarker.activeSelf)
+        {
+            _bombProjectionMarker.SetActive(false);
+        }
+    }
 
-        #endregion
+    private void PlaceMarker()
+    {
+        _bombProjectionMarker.transform.position = new Vector3(transform.position.x + grenadeInput.x * grenadeThrowRange, 
+            _bombProjectionMarker.transform.position.y,
+            transform.position.z + grenadeInput.z * grenadeThrowRange);
     }
 
     private void LookAtEnemy()
@@ -657,27 +652,6 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
             direction.y = 0;
             transform.LookAt(transform.position + direction);
             //transform.LookAt(closestEnemy.gameObject.transform);
-        }
-    }
-
-    private void UpdateCheckInTime()
-    {
-        _elapsedTime += Time.deltaTime;
-
-        if(_elapsedTime > _checkIntervel)
-        {
-            CheckIfRunningInPlace();
-            _elapsedTime = 0;
-        }
-    }
-
-    private void CheckIfRunningInPlace()
-    {
-        distanceMoved = Vector3.Distance(transform.position, previousPosition);
-        isActuallyMoving = distanceMoved > 0.7f;
-        if(isActuallyMoving )
-        {
-            previousPosition = transform.position;
         }
     }
 

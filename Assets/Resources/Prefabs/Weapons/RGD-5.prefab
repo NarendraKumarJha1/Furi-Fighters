@@ -95,7 +95,9 @@ GameObject:
   - component: {fileID: 33316380303130376}
   - component: {fileID: 23614443034357060}
   - component: {fileID: 8710000104088314510}
-  m_Layer: 0
+  - component: {fileID: -117575860240760738}
+  - component: {fileID: -3108289215306061591}
+  m_Layer: 7
   m_Name: RGD-5
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -112,7 +114,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4803080829805316}
@@ -189,6 +191,53 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.07838227
   m_Center: {x: 0, y: 0.027264815, z: 0}
+--- !u!54 &-117575860240760738
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1698056052845220}
+  serializedVersion: 4
+  m_Mass: 100
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!114 &-3108289215306061591
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1698056052845220}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9edfe428e4a1f94e89222fd998f49cd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weaponType: 1
+  _gunPoint: {fileID: 0}
+  _projectile: {fileID: 0}
+  _projectileInstance: {fileID: 0}
+  _GunExplosivePrefab: {fileID: 0}
+  _GunExplosiveInstance: {fileID: 0}
+  _bombExplosivePrefab: {fileID: 0}
+  _bombExplosiveInstance: {fileID: 0}
 --- !u!1 &1793803600195958
 GameObject:
   m_ObjectHideFlags: 0

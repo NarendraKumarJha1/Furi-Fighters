@@ -85,6 +85,7 @@ public class IntrantPlayerInput : MonoBehaviour
     private void GetInputValue()
     {
         mobileMovementInput = new Vector3(_fixedJoystick.Horizontal, 0, _fixedJoystick.Vertical);
+        //Debug.LogError($"joystick input {mobileMovementInput}");
     }
 
     /*[ServerCallback]*/

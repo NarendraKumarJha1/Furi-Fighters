@@ -20,6 +20,9 @@ public class IntrantPlayerHealthManager : MonoBehaviour
 
     [SerializeField] public float groundHieght;
     [SerializeField] public GameObject _bloodFx;
+
+    public float fillAmount;
+
     public GameObject _damagePoint;
     GameObject _damagePointInstance;
     [SerializeField] public GameObject []_bloodSplatter;
@@ -110,6 +113,9 @@ public class IntrantPlayerHealthManager : MonoBehaviour
 
     private void UpdateHealthStatus()
     {
+        fillAmount = currentHealth / maxHealth;
+        _healthFill.fillAmount = fillAmount;
+        _healthTxt.text = "HP " + currentHealth;
     }
     
     public void Increasehealth(int val)
@@ -142,8 +148,6 @@ public class IntrantPlayerHealthManager : MonoBehaviour
         this.gameObject.layer = LayerMask.NameToLayer("Default");
         yield return new WaitForSeconds(1);
         GetComponent<Animator>().enabled = false;
-        if (playerController._gameOverCanvas != null)
-            ActivateGameOver_Panel(true);
         Destroy(this.gameObject, 2f);
         this.enabled = false;
         Debug.LogWarning("Disabled behaviour");
