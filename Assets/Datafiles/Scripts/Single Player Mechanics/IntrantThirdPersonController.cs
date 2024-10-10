@@ -120,10 +120,12 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
     [SerializeField] public GameObject _virtualCamera;
     [SerializeField] public GameObject _kairRef;
     private GameObject _shieldFxInstance = null;
-    private GameObject _gunPrefab = null;
-    private GameObject _gunInstance = null;
-    private GameObject _grenadePrefab = null;
-    private GameObject _grenadeInstance = null;
+    [SerializeField] private GameObject _gunPrefab = null;
+    [SerializeField] private GameObject _crossbowPrefab = null;
+    [SerializeField] private GameObject _crossbowInstance = null;
+    [SerializeField] private GameObject _gunInstance = null;
+    [SerializeField] private GameObject _grenadePrefab = null;
+    [SerializeField] private GameObject _grenadeInstance = null;
     public GameObject rightHandAnchor = null;
 
 
@@ -131,6 +133,7 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
     public Button _signatureAttackButton;
     public FixedJoystick _grenadeButton;
     public FixedJoystick _shootButton;
+    public FixedJoystick _crossbowButton;
     public Image _shootCooldownImage;
     public Image _bombCooldownImage;
     public Image _signatureCooldownImage;
@@ -142,7 +145,9 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
     public CanvasGroup _body;
     public GameObject _playerMinimapPointer;
     public GameObject _checkPointFx;
-    public GameObject _bombProjectionMarker;
+    public GameObject _grenadeProjectionMarker;
+    public GameObject _gunProjectionMarker;
+    public GameObject _crossbowMarker;
     public Collider _hammerCollider;
     public Collider _PlayerShield;
     public Transform _cleaveSpts;
@@ -155,6 +160,7 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
     public bool canSprint = true;
     private readonly float shieldCooldown = 2.5f;
     private static readonly int ShootHash = Animator.StringToHash("Shoot");
+    private static readonly int CrossShootHash = Animator.StringToHash("CrossbowShoot");
     private static readonly int BombHash = Animator.StringToHash("ThrowGrenade");
     private static readonly int SignatureHash = Animator.StringToHash("Kick");
     private static readonly int PowerUpHash = Animator.StringToHash("PowerUp");
@@ -213,7 +219,11 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
     Vector3 pushDirection;
     public Vector3 positionBeforeTeleport;
     public Vector3 grenadeThrowDirection;
+    public Vector3 gunShotDirection;
+    public Vector3 crossbowShotDirection;
     private Vector3 grenadeInput;
+    private Vector3 gunInput;
+    private Vector3 crossbowInput;
 
     [Header("Panel")] 
     public GameObject closestEnemy;
@@ -221,6 +231,7 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
     [Header("Values")] 
     public float movement_Speed = 3f;
     public float grenadeThrowRange = 1f;
+    public float gunShotThrowRange = 1f;
     public string currentAreaName = "";
     public Stack<string> visitedAreas = new Stack<string>();
     public Dictionary<string, bool> playedCinematics = new Dictionary<string, bool>();
@@ -280,7 +291,7 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
 
         #region Listeners
 
-        Joystick.Dropped += ThrowBomb;
+        Joystick.Dropped += Throw;
 
         _signatureAttackButton.onClick.AddListener(() =>
         {
@@ -319,16 +330,46 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
         if (_gunInstance != null)
         {
             _gunInstance.GetComponent<WeaponBehaviour>().ShootBullet();
-            animator.SetBool(ShootHash,false);
             Destroy(_gunInstance);
+        }
+            animator.SetBool(ShootHash,false);
+    }
+
+    private void CrossBowShoot()
+    {
+        animator.SetBool(CrossShootHash, true);
+        //StartCoroutine(StartCooldown(5f, _shootCooldownImage, _shootButton, true));
+        _crossbowPrefab = Resources.Load<GameObject>("Prefabs/Weapons/Crossbow_1_Red");
+        _crossbowInstance = Instantiate(_crossbowPrefab, rightHandAnchor.transform);
+    }
+
+    public void CrossbowShootInit()
+    {
+        if (_crossbowInstance != null)
+        {
+            _crossbowInstance.GetComponent<WeaponBehaviour>().ShootArrow();
+            animator.SetBool(CrossShootHash, false);
+            Destroy(_crossbowInstance);
         }
     }
 
-    private void ThrowBomb()
+    private void Throw(string val)
     {
-        animator.SetBool(BombHash,true);
-        //StartCoroutine(StartCooldown(5f, _bombCooldownImage, _grenadeButton, true));
-        _grenadePrefab = Resources.Load<GameObject>("Prefabs/Weapons/RGD-5");
+        Debug.LogError("throwing");
+        if(val == "Grenade Joystick")
+        {
+            Debug.LogError("throwing grenade");
+            animator.SetBool(BombHash,true);
+            //StartCoroutine(StartCooldown(5f, _bombCooldownImage, _grenadeButton, true));
+            _grenadePrefab = Resources.Load<GameObject>("Prefabs/Weapons/RGD-5");
+        }else if(val == "Gun Joystick")
+        {
+            Shoot();
+        }
+        else if (val == "Crossbow Joystick")
+        {
+            CrossBowShoot();
+        }
     }
 
     public void InstantiateAndThrow()
@@ -338,11 +379,11 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
             _grenadeInstance = Instantiate(_grenadePrefab, rightHandAnchor.transform.position, rightHandAnchor.transform.rotation);
 
             grenadeThrowDirection = CalculateThrowDirection(rightHandAnchor.transform.position,
-                _bombProjectionMarker.transform.position,
+                _grenadeProjectionMarker.transform.position,
                 1.5f,
                 1f);
             _grenadeInstance.GetComponent<Rigidbody>().AddForce(grenadeThrowDirection, ForceMode.VelocityChange);
-            _grenadeInstance.GetComponent<WeaponBehaviour>()._grenadeTarget = _bombProjectionMarker.transform.position;
+            _grenadeInstance.GetComponent<WeaponBehaviour>()._grenadeTarget = _grenadeProjectionMarker.transform.position;
         }
         animator.SetBool(BombHash, false);
     }
@@ -578,6 +619,10 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
 
         HandleGrenadeThrowInput();
 
+        HandleGunThrowInput();
+
+        HandleCrossBowInput();
+
         if (Input.GetKeyDown(KeyCode.P))
         {
             GetComponent<IntrantPlayerInput>().currentPlatform = PlatformType.PC;
@@ -605,26 +650,87 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
         }
     }
 
-    private void HandleGrenadeThrowInput()
+    private void HandleCrossBowInput()
     {
-        grenadeInput = new Vector3(_shootButton.Horizontal, 0, _shootButton.Vertical);
-        if (grenadeInput != Vector3.zero)
+        crossbowInput = new Vector3(_crossbowButton.Horizontal, 0, _crossbowButton.Vertical);
+        if (crossbowInput != Vector3.zero)
         {
-            _bombProjectionMarker.SetActive(true);
-            PlaceMarker();
-            Debug.LogError($"Gun Input {grenadeInput}");
+            _crossbowMarker.SetActive(true);
+            PlaceMarker(2);
         }
-        else if (grenadeInput == Vector3.zero && _bombProjectionMarker.activeSelf)
+        else if (crossbowInput == Vector3.zero && _crossbowMarker.activeSelf)
         {
-            _bombProjectionMarker.SetActive(false);
+            _crossbowMarker.SetActive(false);
         }
     }
 
-    private void PlaceMarker()
+    private void HandleGunThrowInput()
     {
-        _bombProjectionMarker.transform.position = new Vector3(transform.position.x + grenadeInput.x * grenadeThrowRange, 
-            _bombProjectionMarker.transform.position.y,
-            transform.position.z + grenadeInput.z * grenadeThrowRange);
+        gunInput = new Vector3(_shootButton.Horizontal, 0, _shootButton.Vertical);
+        if (gunInput != Vector3.zero)
+        {
+            _gunProjectionMarker.SetActive(true);
+            PlaceMarker(0);
+        }else if (gunInput == Vector3.zero && _gunProjectionMarker.activeSelf)
+        {
+            _gunProjectionMarker.SetActive(false);
+        }
+    }
+
+    private void HandleGrenadeThrowInput()
+    {
+        grenadeInput = new Vector3(_grenadeButton.Horizontal, 0, _grenadeButton.Vertical);
+        if (grenadeInput != Vector3.zero)
+        {
+            _grenadeProjectionMarker.SetActive(true);
+            PlaceMarker(1);
+        }
+        else if (grenadeInput == Vector3.zero && _grenadeProjectionMarker.activeSelf)
+        {
+            _grenadeProjectionMarker.SetActive(false);
+        }
+    }
+
+    private void PlaceMarker(int val)
+    {
+        //0 for gun
+        //1 for grenade
+        //2 for crossbow
+
+        if(val == 0)
+        {
+            gunShotDirection = new Vector3(_shootButton.Horizontal, 0, _shootButton.Vertical).normalized;
+            Quaternion targetRotation = Quaternion.LookRotation(gunShotDirection);
+            
+            _gunProjectionMarker.transform.rotation = Quaternion.Slerp(_gunProjectionMarker.transform.rotation,
+                targetRotation * Quaternion.Euler(0, 100, 0),
+                5f * Time.deltaTime);
+            transform.rotation = Quaternion.Slerp(transform.rotation,
+                targetRotation, 
+                5f *Time.deltaTime);
+        }
+        else if (val == 1)
+        {
+            grenadeThrowDirection = new Vector3(_grenadeButton.Horizontal, 0, _grenadeButton.Vertical).normalized;
+            Quaternion targetRotation = Quaternion.LookRotation(grenadeThrowDirection);
+             
+            _grenadeProjectionMarker.transform.position = new Vector3(transform.position.x + grenadeInput.x * grenadeThrowRange,
+                _grenadeProjectionMarker.transform.position.y,
+                transform.position.z + grenadeInput.z * grenadeThrowRange);
+            transform.rotation = Quaternion.Slerp(transform.rotation, 
+                targetRotation, 
+                5f * Time.deltaTime);
+        }
+        else if (val == 2)
+        {
+            crossbowShotDirection = new Vector3(_crossbowButton.Horizontal, 0, _crossbowButton.Vertical).normalized;
+            Quaternion targetRotation = Quaternion.LookRotation(crossbowShotDirection);
+
+             _crossbowMarker.transform.rotation = Quaternion.Slerp(_crossbowMarker.transform.rotation, 
+                 targetRotation * Quaternion.Euler(0, 100, 0),
+                 5f * Time.deltaTime);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 5f * Time.deltaTime);
+        }
     }
 
     private void LookAtEnemy()

@@ -178,9 +178,9 @@ GameObject:
   - component: {fileID: 33705837635148522}
   - component: {fileID: 23860282398207496}
   - component: {fileID: -1028071983893051969}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: AK74
-  m_TagString: Untagged
+  m_TagString: Gun
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -266,9 +266,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9edfe428e4a1f94e89222fd998f49cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  weaponType: 0
+  _grenadeTarget: {x: 0, y: 0, z: 0}
   _gunPoint: {fileID: 7761634529619377757}
-  _projectile: {fileID: 0}
+  _gunProjectilelayerMask:
+    serializedVersion: 2
+    m_Bits: 0
+  _middleProjectile: {fileID: 0}
+  _leftProjectile: {fileID: 0}
+  _rightProjectile: {fileID: 0}
+  _muzzleVFX: {fileID: 0}
   _projectileInstance: {fileID: 0}
+  _crossbowProjectile: {fileID: 0}
+  _crossbowProjectileInstance: {fileID: 0}
+  _GunExplosivePrefab: {fileID: 0}
+  _GunExplosiveInstance: {fileID: 0}
+  _bombExplosivePrefab: {fileID: 0}
+  _bombExplosiveInstance: {fileID: 0}
+  _startposition: {x: 0, y: 0, z: 0}
+  _bulletSpeed: 1.2
+  _bulletRange: 1
+  _distanceTravelled: 0
 --- !u!1 &1927369336514790
 GameObject:
   m_ObjectHideFlags: 0
