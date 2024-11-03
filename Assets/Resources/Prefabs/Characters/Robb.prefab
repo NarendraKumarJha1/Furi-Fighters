@@ -2685,6 +2685,7 @@ GameObject:
   - component: {fileID: 6486850692772662170}
   - component: {fileID: 7109955300739187431}
   - component: {fileID: 8134971263277471262}
+  - component: {fileID: 1977091008660209144}
   m_Layer: 6
   m_Name: Robb
   m_TagString: Player
@@ -3049,6 +3050,26 @@ MonoBehaviour:
   cameraMain: {fileID: 0}
   _fixedJoystick: {fileID: 2826718290928888634}
   _testing: 0
+--- !u!114 &1977091008660209144
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8123240148828040307}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 0
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
 --- !u!1 &8161926906280244552
 GameObject:
   m_ObjectHideFlags: 0
