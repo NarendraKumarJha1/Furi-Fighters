@@ -14,8 +14,8 @@ public class LobbyUIManager : MonoBehaviour
     [SerializeField] private TMP_InputField joinCodeInputField;
     [SerializeField] private TMP_InputField playerNameInputField;
     [SerializeField] private LobbyCreateUI lobbyCreateUI;
-    //[SerializeField] private Transform lobbyContainer;
-    //[SerializeField] private Transform lobbyTemplate;
+    [SerializeField] private Transform lobbyContainer;
+    [SerializeField] private Transform lobbyTemplate;
 
 
     private void Awake()
@@ -57,7 +57,7 @@ public class LobbyUIManager : MonoBehaviour
 
     private void UpdateLobbyList(List<Lobby> lobbyList)
     {
-        /*foreach (Transform child in lobbyContainer)
+        foreach (Transform child in lobbyContainer)
         {
             if (child == lobbyTemplate) continue;
             Destroy(child.gameObject);
@@ -68,7 +68,7 @@ public class LobbyUIManager : MonoBehaviour
             Transform lobbyTransform = Instantiate(lobbyTemplate, lobbyContainer);
             lobbyTransform.gameObject.SetActive(true);
             lobbyTransform.GetComponent<LobbyListSingleUI>().SetLobby(lobby);
-        }*/
+        }
     }
 
     private void OnDestroy()
