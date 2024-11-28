@@ -41,6 +41,7 @@ public class IntrantPlayerInput : MonoBehaviour
 
     private bool _paused = false;
     public bool _testing = false;
+    public bool _strafeDefault = false;
     #endregion
 
 
@@ -70,6 +71,10 @@ public class IntrantPlayerInput : MonoBehaviour
         if (_testing)
         {
             currentPlatform = PlatformType.PC;
+        }
+        if (_strafeDefault)
+        {
+            cc.Strafe();
         }
     }
 

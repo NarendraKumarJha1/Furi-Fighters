@@ -134,6 +134,7 @@ public class WeaponBehaviour : MonoBehaviour
 
     public void ShootArrow()
     {
+        Debug.LogError("ShootArrow");
         _crossbowProjectileInstance = Instantiate(_crossbowProjectile, _crossbowArrowSpts.position, _crossbowArrowSpts.rotation);
         _crossbowProjectileInstance.GetComponent<Rigidbody>().
             AddForce(_crossbowProjectileInstance.transform.forward * _bulletSpeed, ForceMode.Impulse);
