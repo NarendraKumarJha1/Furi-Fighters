@@ -169,6 +169,12 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
     private static readonly int DeadHash = Animator.StringToHash("Died");
     private static readonly int StrafeNormalHash = Animator.StringToHash("StrafeNormal");
     private static readonly int ConfusedHash = Animator.StringToHash("Confused");
+    private static readonly int RunningGunAimHash = Animator.StringToHash("RunningGunAim");
+    private static readonly int RunningGrenadeAimHash = Animator.StringToHash("RunningGrenadeAim");
+    private static readonly int IdleGunAimHash = Animator.StringToHash("IdleGunAim");
+    private static readonly int IdleGrenadeAimHash = Animator.StringToHash("IdleGrenadeAim") ;
+    private static readonly int IdleGrenadeHash = Animator.StringToHash("IdleGrenade") ;
+    private static readonly int IdleGunHash = Animator.StringToHash("IdleGun") ;
     private static readonly int StrafeGunHash = Animator.StringToHash("StrafeGun");
 
     [Header("Bool")]
@@ -212,6 +218,7 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
     public bool _collectedAssembledMeronNft;
     public bool _hasPowerPotion;
     public bool isActuallyMoving;
+    
 
     [Header("Materials")]
     public Material _alkemmanaSwitchonMat;
@@ -236,7 +243,7 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
     [Header("Values")]
     public float movement_Speed = 3f;
     public float grenadeThrowRange = 1f;
-    public float idleThreshold = 5f;
+    private float idleThreshold = 5f;
     private float idleTime;
     public float gunShotThrowRange = 1f;
     public string currentAreaName = "";
@@ -350,35 +357,26 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
 
     private void Shoot()
     {
+        if (input != Vector3.zero)
+        {
+            animator.SetBool(RunningGunAimHash, false);
+            animator.SetBool(RunningGrenadeAimHash, false);
+            animator.SetBool(IdleGunAimHash, false);
+            animator.SetBool(IdleGrenadeAimHash, false);
+            animator.SetBool(ConfusedHash, false);
+        }
+        else if(input == Vector3.zero)
+        {
+            animator.SetBool(RunningGunAimHash, false);
+            animator.SetBool(RunningGrenadeAimHash, false);
+            animator.SetBool(IdleGunAimHash, false);
+            animator.SetBool(IdleGrenadeAimHash, false);
+            animator.SetBool(ConfusedHash, false);
+        }
         animator.SetBool(ShootHash, true);
         //StartCoroutine(StartCooldown(5f, _shootCooldownImage, _shootButton, true));
         //if there is no active weapon
-        if (_activeWeaponInstance != null)
-        {
-            if (_gunPrefab == null)
-            {
-                _gunPrefab = Resources.Load<GameObject>("Prefabs/Weapons/AK74");
-            }
-            if (_activeWeaponInstance.name != _gunPrefab.name + "(Clone)")
-            {
-                Destroy(_activeWeaponInstance);
-                _gunInstance = Instantiate(_gunPrefab, rightHandAnchor.transform);
-                _activeWeaponInstance = _gunInstance;
-            }
-            else if (_activeWeaponInstance.name == _gunPrefab.name)
-            {
-                _gunInstance = _activeWeaponInstance;
-            }
-        }
-        else if (_activeWeaponInstance == null)
-        {
-            if (_gunPrefab == null)
-            {
-                _gunPrefab = Resources.Load<GameObject>("Prefabs/Weapons/AK74");
-            }
-            _gunInstance = Instantiate(_gunPrefab, rightHandAnchor.transform);
-            _activeWeaponInstance = _gunInstance;
-        }
+       
         if (_activeWeaponInstance == null)
         {
             animator.SetBool(StrafeNormalHash, true);
@@ -403,34 +401,26 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
 
     private void CrossBowShoot()
     {
+        if (input != Vector3.zero)
+        {
+            animator.SetBool(RunningGunAimHash, false);
+            animator.SetBool(RunningGrenadeAimHash, false);
+            animator.SetBool(IdleGunAimHash, false);
+            animator.SetBool(IdleGrenadeAimHash, false);
+            animator.SetBool(ConfusedHash, false);
+        }
+        else if (input == Vector3.zero)
+        {
+            animator.SetBool(RunningGunAimHash, false);
+            animator.SetBool(RunningGrenadeAimHash, false);
+            animator.SetBool(IdleGunAimHash, false);
+            animator.SetBool(IdleGrenadeAimHash, false);
+            animator.SetBool(ConfusedHash, false);
+        }
         animator.SetBool(CrossShootHash, true);
         //StartCoroutine(StartCooldown(5f, _shootCooldownImage, _shootButton, true));
         //if there is no active weapon
-        if (_activeWeaponInstance != null)
-        {
-            if (_crossbowPrefab == null)
-            {
-                _crossbowPrefab = Resources.Load<GameObject>("Prefabs/Weapons/Crossbow_1_Red");
-            }
-            if (_activeWeaponInstance.name != _crossbowPrefab.name + "(Clone)")
-            {
-                Destroy(_activeWeaponInstance);
-                _crossbowInstance = Instantiate(_crossbowPrefab, rightHandAnchor.transform);
-                _activeWeaponInstance = _crossbowInstance;
-            }else if (_activeWeaponInstance.name == _crossbowPrefab.name)
-            {
-                _crossbowInstance = _activeWeaponInstance;
-            }
-        }
-        else if (_activeWeaponInstance == null)
-        {
-            if (_crossbowPrefab == null)
-            {
-                _crossbowPrefab = Resources.Load<GameObject>("Prefabs/Weapons/Crossbow_1_Red");
-            }
-            _crossbowInstance = Instantiate(_crossbowPrefab, rightHandAnchor.transform);
-            _activeWeaponInstance = _crossbowInstance;
-        }
+       
         if (_activeWeaponInstance == null)
         {
             animator.SetBool(StrafeNormalHash, true);
@@ -459,7 +449,12 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
 
     private void Throw(string val)
     {
+        idleTime = 0;
+
         Debug.LogError("throwing");
+        animator.SetBool(ConfusedHash, false);
+        animator.SetBool(IdleGunHash, false);
+        animator.SetBool(IdleGrenadeHash, false);
         if(_activeWeaponInstance == null)
         {
             animator.SetBool(StrafeNormalHash, true);
@@ -472,9 +467,25 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
         }
         if (val == "Grenade Joystick")
         {
-            Destroy(_activeWeaponInstance);
+            //Destroy(_activeWeaponInstance);
 
             Debug.LogError("throwing grenade");
+            if (input != Vector3.zero)
+            {
+                animator.SetBool(RunningGunAimHash, false);
+                animator.SetBool(RunningGrenadeAimHash, false);
+                animator.SetBool(IdleGunAimHash, false);
+                animator.SetBool(IdleGrenadeAimHash, false);
+                animator.SetBool(ConfusedHash, false);
+            }
+            else if (input == Vector3.zero)
+            {
+                animator.SetBool(RunningGunAimHash, false);
+                animator.SetBool(RunningGrenadeAimHash, false);
+                animator.SetBool(IdleGunAimHash, false);
+                animator.SetBool(IdleGrenadeAimHash, false);
+                animator.SetBool(ConfusedHash, false);
+            }
             animator.SetBool(BombHash, true);
             //StartCoroutine(StartCooldown(5f, _bombCooldownImage, _grenadeButton, true));
         }
@@ -492,29 +503,13 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
 
     public void InstantiateAndThrow()
     {
-        //if there is no active weapon
-        /*if (_activeWeaponInstance != null)
-        {
-            if (_grenadePrefab == null)
-            {
-                _grenadePrefab = Resources.Load<GameObject>("Prefabs/Weapons/RGD-5");
-            }
-            if (_activeWeaponInstance.name != _grenadePrefab.name + "(Clone)")
-            {
-               
-                _grenadeInstance = Instantiate(_grenadePrefab, rightHandAnchor.transform.position, rightHandAnchor.transform.rotation);
-                _activeWeaponInstance = _grenadeInstance;
-            }
-            else if (_activeWeaponInstance.name == _grenadePrefab.name)
-            {
-                _grenadeInstance = _activeWeaponInstance;
-            }
-        }*/
+        Destroy(_activeWeaponInstance);
         if (_activeWeaponInstance == null)
         {
             _grenadeInstance = Instantiate(_grenadePrefab, rightHandAnchor.transform.position, rightHandAnchor.transform.rotation);
             _activeWeaponInstance = _grenadeInstance;
         }
+
         grenadeThrowDirection = CalculateThrowDirection(rightHandAnchor.transform.position,
             _grenadeProjectionMarker.transform.position,
             1.5f,
@@ -523,6 +518,22 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
         _grenadeInstance.GetComponent<WeaponBehaviour>()._grenadeTarget = _grenadeProjectionMarker.transform.position;
 
         animator.SetBool(BombHash, false);
+        if (input != Vector3.zero)
+        {
+            animator.SetBool(RunningGunAimHash, false);
+            animator.SetBool(RunningGrenadeAimHash, false);
+            animator.SetBool(IdleGunAimHash, false);
+            animator.SetBool(IdleGrenadeAimHash, false);
+            animator.SetBool(ConfusedHash, false);
+        }
+        else if (input == Vector3.zero)
+        {
+            animator.SetBool(RunningGunAimHash, false);
+            animator.SetBool(RunningGrenadeAimHash, false);
+            animator.SetBool(IdleGunAimHash, false);
+            animator.SetBool(IdleGrenadeAimHash, false);
+            animator.SetBool(ConfusedHash, false);
+        }
         if (_activeWeaponInstance == null)
         {
             animator.SetBool(StrafeNormalHash, true);
@@ -532,6 +543,18 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
         {
             animator.SetBool(StrafeNormalHash, false);
             animator.SetBool(StrafeGunHash, true);
+        }
+    }
+
+    public void AttackStatus(int val)
+    {
+        if (val == 0)
+        {
+            attacking = false;
+        }
+        else if (val == 1)
+        {
+            attacking = true;
         }
     }
 
@@ -834,7 +857,7 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
             animator.SetBool(DeadHash, false); // Ensure idle animation stops
                 animator.SetBool(ConfusedHash, false);
         }
-        else
+        else if(_activeWeaponInstance == null)
         {
             // Player is not moving
             idleTime += Time.deltaTime; // Increment idle time
@@ -897,6 +920,49 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
 
         if (val == 0)
         {
+            if (_activeWeaponInstance != null)
+            {
+                if (_gunPrefab == null)
+                {
+                    _gunPrefab = Resources.Load<GameObject>("Prefabs/Weapons/AK74");
+                }
+                if (_activeWeaponInstance.name != _gunPrefab.name + "(Clone)")
+                {
+                    Destroy(_activeWeaponInstance);
+                    _gunInstance = Instantiate(_gunPrefab, rightHandAnchor.transform);
+                    _activeWeaponInstance = _gunInstance;
+                }
+                else if (_activeWeaponInstance.name == _gunPrefab.name)
+                {
+                    _gunInstance = _activeWeaponInstance;
+                }
+            }
+            else if (_activeWeaponInstance == null)
+            {
+                if (_gunPrefab == null)
+                {
+                    _gunPrefab = Resources.Load<GameObject>("Prefabs/Weapons/AK74");
+                }
+                _gunInstance = Instantiate(_gunPrefab, rightHandAnchor.transform);
+                _activeWeaponInstance = _gunInstance;
+            }
+
+            if (input != Vector3.zero)
+            {
+                animator.SetBool(RunningGunAimHash, true);
+                animator.SetBool(RunningGrenadeAimHash, false);
+                animator.SetBool(IdleGunAimHash, false);
+                animator.SetBool(IdleGrenadeAimHash, false);
+                animator.SetBool(ConfusedHash, false);
+            }
+            else if (input == Vector3.zero)
+            {
+                animator.SetBool(RunningGunAimHash, false);
+                animator.SetBool(RunningGrenadeAimHash, false);
+                animator.SetBool(IdleGunAimHash, true);
+                animator.SetBool(IdleGrenadeAimHash, false);
+                animator.SetBool(ConfusedHash, false);
+            }
             gunShotDirection = new Vector3(_shootButton.Horizontal, 0, _shootButton.Vertical).normalized;
             Quaternion targetRotation = Quaternion.LookRotation(gunShotDirection);
 
@@ -909,6 +975,29 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
         }
         else if (val == 1)
         {
+            if (_activeWeaponInstance == null)
+            {
+                _grenadeInstance = Instantiate(_grenadePrefab, rightHandAnchor.transform.position, rightHandAnchor.transform.rotation, rightHandAnchor.transform);
+                _grenadeInstance.GetComponent<Rigidbody>().isKinematic = true;
+                _activeWeaponInstance = _grenadeInstance;
+            }
+
+            if (input != Vector3.zero)
+            {
+                animator.SetBool(RunningGunAimHash, false);
+                animator.SetBool(RunningGrenadeAimHash, true);
+                animator.SetBool(IdleGunAimHash, false);
+                animator.SetBool(IdleGrenadeAimHash, false);
+                animator.SetBool(ConfusedHash, false);
+            }
+            else if (input == Vector3.zero)
+            {
+                animator.SetBool(RunningGunAimHash, false);
+                animator.SetBool(RunningGrenadeAimHash, false);
+                animator.SetBool(IdleGunAimHash, false);
+                animator.SetBool(IdleGrenadeAimHash, true);
+                animator.SetBool(ConfusedHash, false);
+            }
             grenadeThrowDirection = new Vector3(_grenadeButton.Horizontal, 0, _grenadeButton.Vertical).normalized;
             Quaternion targetRotation = Quaternion.LookRotation(grenadeThrowDirection);
 
@@ -921,6 +1010,49 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
         }
         else if (val == 2)
         {
+            if (_activeWeaponInstance != null)
+            {
+                if (_crossbowPrefab == null)
+                {
+                    _crossbowPrefab = Resources.Load<GameObject>("Prefabs/Weapons/Crossbow_1_Red");
+                }
+                if (_activeWeaponInstance.name != _crossbowPrefab.name + "(Clone)")
+                {
+                    Destroy(_activeWeaponInstance);
+                    _crossbowInstance = Instantiate(_crossbowPrefab, rightHandAnchor.transform);
+                    _activeWeaponInstance = _crossbowInstance;
+                }
+                else if (_activeWeaponInstance.name == _crossbowPrefab.name)
+                {
+                    _crossbowInstance = _activeWeaponInstance;
+                }
+            }
+            else if (_activeWeaponInstance == null)
+            {
+                if (_crossbowPrefab == null)
+                {
+                    _crossbowPrefab = Resources.Load<GameObject>("Prefabs/Weapons/Crossbow_1_Red");
+                }
+                _crossbowInstance = Instantiate(_crossbowPrefab, rightHandAnchor.transform);
+                _activeWeaponInstance = _crossbowInstance;
+            }
+
+            if (input != Vector3.zero)
+            {
+                animator.SetBool(RunningGunAimHash, true);
+                animator.SetBool(RunningGrenadeAimHash, true);
+                animator.SetBool(IdleGunAimHash, false);
+                animator.SetBool(IdleGrenadeAimHash, false);
+                animator.SetBool(ConfusedHash, false);
+            }
+            else if (input == Vector3.zero)
+            {
+                animator.SetBool(RunningGunAimHash, false);
+                animator.SetBool(RunningGrenadeAimHash, false);
+                animator.SetBool(IdleGunAimHash, true);
+                animator.SetBool(IdleGrenadeAimHash, true);
+                animator.SetBool(ConfusedHash, false);
+            }
             crossbowShotDirection = new Vector3(_crossbowButton.Horizontal, 0, _crossbowButton.Vertical).normalized;
             Quaternion targetRotation = Quaternion.LookRotation(crossbowShotDirection);
 
@@ -928,6 +1060,34 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
                 targetRotation * Quaternion.Euler(0, 100, 0),
                 5f * Time.deltaTime);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 5f * Time.deltaTime);
+        }
+    }
+
+    public void SetIdlePostAttack()
+    {
+        if (_activeWeaponInstance != null )
+        {
+            if(_crossbowPrefab != null)
+            {
+                if (_activeWeaponInstance.name == _crossbowPrefab.name + "(Clone)")
+                {
+                    animator.SetBool(IdleGunHash , true);
+                }
+            }
+            else if (_gunPrefab != null)
+            {
+                if (_activeWeaponInstance.name == _gunPrefab.name + "(Clone)")
+                {
+                    animator.SetBool(IdleGunHash, true);
+                }
+            }
+            else if (_grenadePrefab != null)
+            {
+                if (_activeWeaponInstance.name == _grenadePrefab.name + "(Clone)")
+                {
+                    animator.SetBool(IdleGrenadeHash, true);
+                }
+            }
         }
     }
 
