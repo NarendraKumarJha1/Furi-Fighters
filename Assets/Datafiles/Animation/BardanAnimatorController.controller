@@ -340,7 +340,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Shoot
+  m_Name: GunShoot
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions:
@@ -356,7 +356,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 22d3cfeb0a1f8434dba9c178542f4113, type: 2}
+  m_Motion: {fileID: 7400000, guid: fae4af1eab0cf684580a8e77724ab400, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -420,8 +420,8 @@ AnimatorStateTransition:
   m_PrefabAsset: {fileID: 0}
   m_Name: 
   m_Conditions:
-  - m_ConditionMode: 2
-    m_ConditionEvent: IdleGrenadeAim
+  - m_ConditionMode: 1
+    m_ConditionEvent: CancelAim
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 1102453380763999466}
@@ -547,8 +547,8 @@ AnimatorStateTransition:
   m_PrefabAsset: {fileID: 0}
   m_Name: 
   m_Conditions:
-  - m_ConditionMode: 2
-    m_ConditionEvent: IdleGunAim
+  - m_ConditionMode: 1
+    m_ConditionEvent: CancelAim
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 1102453380763999466}
@@ -973,6 +973,12 @@ AnimatorController:
     m_DefaultBool: 0
     m_Controller: {fileID: 9100000}
   - m_Name: IdleGrenade
+    m_Type: 4
+    m_DefaultFloat: 0
+    m_DefaultInt: 0
+    m_DefaultBool: 0
+    m_Controller: {fileID: 9100000}
+  - m_Name: CancelAim
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
@@ -19314,7 +19320,7 @@ AnimatorStateMachine:
     m_Position: {x: 1150, y: 70, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -4525280216675692095}
-    m_Position: {x: -240, y: -140, z: 0}
+    m_Position: {x: -280, y: -140, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -7045556137202322699}
     m_Position: {x: -80, y: -220, z: 0}
@@ -20839,8 +20845,8 @@ AnimatorStateTransition:
   m_PrefabAsset: {fileID: 0}
   m_Name: 
   m_Conditions:
-  - m_ConditionMode: 2
-    m_ConditionEvent: RunningGunAim
+  - m_ConditionMode: 1
+    m_ConditionEvent: CancelAim
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 1102453380763999466}
@@ -21265,8 +21271,8 @@ AnimatorStateTransition:
   m_PrefabAsset: {fileID: 0}
   m_Name: 
   m_Conditions:
-  - m_ConditionMode: 2
-    m_ConditionEvent: RunningGrenadeAim
+  - m_ConditionMode: 1
+    m_ConditionEvent: CancelAim
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 1102453380763999466}

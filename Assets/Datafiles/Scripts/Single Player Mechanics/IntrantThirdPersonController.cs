@@ -128,6 +128,7 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
     [SerializeField] private GameObject _grenadeInstance = null;
     [SerializeField] private GameObject _activeWeaponInstance = null;
     public GameObject rightHandAnchor = null;
+    public GameObject rightHandGrenadeAnchor = null;
 
 
     [Header("UI Ref")]
@@ -236,6 +237,7 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
     private Vector3 grenadeInput;
     private Vector3 gunInput;
     private Vector3 crossbowInput;
+    private Vector3 grenadeProjectionMarkerPos;
 
     [Header("Panel")]
     public GameObject closestEnemy;
@@ -504,20 +506,25 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
     public void InstantiateAndThrow()
     {
         Destroy(_activeWeaponInstance);
-        if (_activeWeaponInstance == null)
-        {
-            _grenadeInstance = Instantiate(_grenadePrefab, rightHandAnchor.transform.position, rightHandAnchor.transform.rotation);
-            _activeWeaponInstance = _grenadeInstance;
-        }
-
-        grenadeThrowDirection = CalculateThrowDirection(rightHandAnchor.transform.position,
-            _grenadeProjectionMarker.transform.position,
+        Debug.LogError("InstantiateAndThrow");
+        _grenadeInstance = Instantiate(_grenadePrefab, rightHandGrenadeAnchor.transform.position, rightHandGrenadeAnchor.transform.rotation);
+        Debug.LogError("Grenade instant");
+        _activeWeaponInstance = _grenadeInstance;
+        Debug.LogError("InstantiateAndThrow");
+        Debug.LogError($"grenadeProjectionMarkerPos{grenadeProjectionMarkerPos}");
+        grenadeThrowDirection = CalculateThrowDirection(rightHandGrenadeAnchor.transform.position,
+            grenadeProjectionMarkerPos,
             1.5f,
             1f);
-        _grenadeInstance.GetComponent<Rigidbody>().AddForce(grenadeThrowDirection, ForceMode.VelocityChange);
-        _grenadeInstance.GetComponent<WeaponBehaviour>()._grenadeTarget = _grenadeProjectionMarker.transform.position;
+        Debug.LogError("InstantiateAndThrow");
 
+        _grenadeInstance.GetComponent<Rigidbody>().AddForce(grenadeThrowDirection, ForceMode.VelocityChange);
+        Debug.LogError("InstantiateAndThrow");
+        _grenadeInstance.GetComponent<WeaponBehaviour>()._grenadeTarget = grenadeProjectionMarkerPos;
+
+        Debug.LogError("InstantiateAndThrow");
         animator.SetBool(BombHash, false);
+        Debug.LogError("InstantiateAndThrow");
         if (input != Vector3.zero)
         {
             animator.SetBool(RunningGunAimHash, false);
@@ -534,6 +541,7 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
             animator.SetBool(IdleGrenadeAimHash, false);
             animator.SetBool(ConfusedHash, false);
         }
+        Debug.LogError("InstantiateAndThrow");
         if (_activeWeaponInstance == null)
         {
             animator.SetBool(StrafeNormalHash, true);
@@ -967,7 +975,7 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
             Quaternion targetRotation = Quaternion.LookRotation(gunShotDirection);
 
             _gunProjectionMarker.transform.rotation = Quaternion.Slerp(_gunProjectionMarker.transform.rotation,
-                targetRotation * Quaternion.Euler(0, 100, 0),
+                targetRotation * Quaternion.Euler(0, 90, 0),
                 5f * Time.deltaTime);
             transform.rotation = Quaternion.Slerp(transform.rotation,
                 targetRotation,
@@ -977,7 +985,7 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
         {
             if (_activeWeaponInstance == null)
             {
-                _grenadeInstance = Instantiate(_grenadePrefab, rightHandAnchor.transform.position, rightHandAnchor.transform.rotation, rightHandAnchor.transform);
+                _grenadeInstance = Instantiate(_grenadePrefab, rightHandGrenadeAnchor.transform.position, rightHandGrenadeAnchor.transform.rotation, rightHandGrenadeAnchor.transform);
                 _grenadeInstance.GetComponent<Rigidbody>().isKinematic = true;
                 _activeWeaponInstance = _grenadeInstance;
             }
@@ -1007,6 +1015,7 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
             transform.rotation = Quaternion.Slerp(transform.rotation,
                 targetRotation,
                 5f * Time.deltaTime);
+            grenadeProjectionMarkerPos = _grenadeProjectionMarker.transform.position;
         }
         else if (val == 2)
         {
@@ -1057,7 +1066,7 @@ public class IntrantThirdPersonController : IntrantThirdPersonAnimator
             Quaternion targetRotation = Quaternion.LookRotation(crossbowShotDirection);
 
             _crossbowMarker.transform.rotation = Quaternion.Slerp(_crossbowMarker.transform.rotation,
-                targetRotation * Quaternion.Euler(0, 100, 0),
+                targetRotation * Quaternion.Euler(0, 80, 0),
                 5f * Time.deltaTime);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 5f * Time.deltaTime);
         }
